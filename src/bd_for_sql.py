@@ -1,14 +1,13 @@
 import psycopg2
 
+
 class DBManager:
-    connect_database = psycopg2.connect(database="seach_vacancies", user="postgres", password="159763")
+    #connect_database = psycopg2.connect(database="seach_vacancies", user="postgres", password="159763")
 
-
-
-    def __init__(self):
-        self.cur = self.connect_database.cursor()
-        self.quantity = self.cur.execute(f"""select count(*) FROM vacancies""")
-        self.rows = self.cur.fetchone()
+    def __init__(self, cur):
+        self.cur = cur
+        self.quantity = cur.execute(f"""select count(*) FROM vacancies""")
+        self.rows = cur.fetchone()
 
     def get_companies_and_vacancies_count(self, limit=10):
         """получает список всех компаний и количество вакансий у каждой компании."""
@@ -17,10 +16,10 @@ class DBManager:
         return self.cur.fetchall()
 
     def get_all_vacancies(self):
-       """ получает список всех вакансий с указанием названия компании,
+        """ получает список всех вакансий с указанием названия компании,
        названия вакансии и зарплаты и ссылки на вакансию."""
-       self.cur.execute(f"""select employer, vacancy, salary, url FROM vacancies""")
-       return self.cur.fetchall()
+        self.cur.execute(f"""select employer, vacancy, salary, url FROM vacancies""")
+        return self.cur.fetchall()
 
     def get_avg_salary(self):
         """ получает среднюю зарплату по вакансиям."""
@@ -28,12 +27,18 @@ class DBManager:
                           where salary > 0""")
         return self.cur.fetchone()
 
-    def get_vacancies_with_higher_salary():
+    def get_vacancies_with_higher_salary(self):
         """получает список всех вакансий, у которых
         зарплата выше средней по всем вакансиям."""
-        pass
+        self.cur.execute(f"""select vacancy, salary, url  FROM vacancies 
+        where salary > (select avg(salary) from vacancies 
+        where salary >0)
+        Order by salary desc""")
+        return self.cur.fetchall()
 
-    def get_vacancies_with_keyword():
+    def get_vacancies_with_keyword(self, answer):
         """получает список всех вакансий, в названии
         которых содержатся переданные в метод слова, например python."""
-        pass
+        self.cur.execute(f"""SELECT vacancy, salary, url FROM vacancies 
+        WHERE vacancy LIKE '%{answer}%'""")
+        return self.cur.fetchone()

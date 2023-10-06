@@ -1,53 +1,43 @@
-import json
-
 from src.bd_for_sql import DBManager
 import psycopg2
 
-from src.pars_hh import get_vacancies
+from src.func import print_vacancy, limit
+from src.pars_hh import vacancy_on_sql
 
 connect_database = psycopg2.connect(database="seach_vacancies", user="postgres", password="159763")
 
 answer = input('Давай посмотрим кто готов взять тебя на работу?!\n'
-      'Введи свой запрос, и, если тебя интересует определенный город, укажи его тоже. \n'
-      'ПРИМЕР: python на дому, а я поищу тебе нормальных работодателей\n')
+               'Введи свой запрос, и, если тебя интересует определенный город, укажи его тоже. \n'
+               'ПРИМЕР: python на дому, а я поищу тебе нормальных работодателей\n')
 
 cur = connect_database.cursor()
 cur.execute("TRUNCATE TABLE vacancies")
 
 print('Ожидайте, ваш звонок очень важен для нас, сейчас я все загружу, и все расскажу, буквально 5 сек\n')
+vacant = DBManager(cur)
+vacancy_on_sql(answer, cur)
 
-for page in range(0, 20):
-    vacant = json.loads(get_vacancies(answer, page))
-    if (vacant['pages'] - page) <= 1:
-        break
-    for vacancy in vacant['items']:
-        name = vacancy['name']
-        employer = vacancy['employer']['name']
-        if vacancy['salary']:
-            salary = vacancy['salary']['from']
-        else:
-            salary = 0
-        requirements = vacancy['snippet']['requirement']
-        responsibility = vacancy['snippet']['responsibility']
-        url = vacancy['alternate_url']
-        cur.execute("INSERT INTO vacancies VALUES (%s, %s, %s, %s, %s, %s)",
-                   (name, employer, salary, requirements, responsibility, url))
 connect_database.commit()
-vacant = DBManager()
-limit = input(f"Я нашел тебе {vacant.rows[0]} вакансий, "
-              f"твои последующие запросы буду выводить \n"
-              f"ТОПом по 10 штук, если все ок нажми 'enter' "
-              f"либо любое другое число до {vacant.rows[0]}\n")
-if limit.isdigit():
-    limit = limit
-else:
-    limit = 10
 
 
-#print(vacant.get_companies_and_vacancies_count(limit))
-#print(vacant.get_all_vacancies())
 
-
-#print(int(vacant.get_avg_salary()[0]))
-
-
+print(f"Я нашел тебе {vacant.rows[0]} вакансий,\n"
+      f"Средняя зарплата равна {vacant.get_avg_salary()[0]}\n"
+      f"давай их немного отсортируем, напиши нужный пункт\n")
+show_vacancy = 0
+while show_vacancy not in (1, 2, 3, 4, 5):
+    show_vacancy = int(input(f"1. Твои любимые компании: 10 штук\n"
+                         f"2. Вывести компании с количеством вакансий в каждой\n"
+                         f"3. Показать вакансии, компании, зарплату, ссылку\n"
+                         f"4. Показать все вакансии с зарплатой вышесреднего\n"
+                         f"5. Поиск по фразе в названии вакансии\n"))
+    if show_vacancy not in [1, 2, 3, 4, 5]:
+        print('Ошибочка вышла, выбери пункт снова')
+        continue
+    if show_vacancy in (2, 3):
+        limit = limit(vacant)
+    if show_vacancy == 5:
+        key_word = input("Что найти в названии вакансии?")
+        print(vacant.get_vacancies_with_keyword(key_word))
+        break
+    print_vacancy(show_vacancy-1, limit)
