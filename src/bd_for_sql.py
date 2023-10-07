@@ -1,18 +1,14 @@
-import psycopg2
-
-
 class DBManager:
-    #connect_database = psycopg2.connect(database="seach_vacancies", user="postgres", password="159763")
 
     def __init__(self, cur):
         self.cur = cur
-        self.quantity = cur.execute(f"""select count(*) FROM vacancies""")
-        self.rows = cur.fetchone()
+        self.quantity = self.cur.execute(f"""select count(*) FROM vacancies""")
+        self.rows = self.cur.fetchone()
 
-    def get_companies_and_vacancies_count(self, limit=10):
+    def get_companies_and_vacancies_count(self):
         """получает список всех компаний и количество вакансий у каждой компании."""
         self.cur.execute(f"""select employer, count(*) as кол_во from vacancies
-        GROUP BY employer ORDER BY кол_во DESC LIMIT {limit}""")
+        GROUP BY employer ORDER BY кол_во DESC""")
         return self.cur.fetchall()
 
     def get_all_vacancies(self):
@@ -41,4 +37,4 @@ class DBManager:
         которых содержатся переданные в метод слова, например python."""
         self.cur.execute(f"""SELECT vacancy, salary, url FROM vacancies 
         WHERE vacancy LIKE '%{answer}%'""")
-        return self.cur.fetchone()
+        return self.cur.fetchall()

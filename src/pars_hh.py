@@ -19,6 +19,7 @@ def vacancy_on_sql(answer, cur):
         for vacancy in vacant['items']:
             name = vacancy['name']
             employer = vacancy['employer']['name']
+
             if vacancy['salary']:
                 salary = vacancy['salary']['from']
             else:
@@ -28,5 +29,3 @@ def vacancy_on_sql(answer, cur):
             url = vacancy['alternate_url']
             cur.execute("INSERT INTO vacancies VALUES (%s, %s, %s, %s, %s, %s)",
                         (name, employer, salary, requirements, responsibility, url))
-
-
