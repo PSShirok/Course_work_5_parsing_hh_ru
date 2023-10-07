@@ -19,7 +19,6 @@ def vacancy_on_sql(answer, cur):
         for vacancy in vacant['items']:
             name = vacancy['name']
             employer = vacancy['employer']['name']
-
             if vacancy['salary']:
                 salary = vacancy['salary']['from']
             else:
@@ -29,3 +28,14 @@ def vacancy_on_sql(answer, cur):
             url = vacancy['alternate_url']
             cur.execute("INSERT INTO vacancies VALUES (%s, %s, %s, %s, %s, %s)",
                         (name, employer, salary, requirements, responsibility, url))
+
+
+def favorite_employer(list_id):
+    for ident in list_id:
+        params = {"employer_id": ident}
+        req = requests.get('https://api.hh.ru/vacancies/', params=params)
+        data = req.content.decode()
+        req.close()
+        vacant = json.loads(data)
+        print(vacant['items'][0]['name'], vacant['items'][0]['employer']['name'],
+              vacant['items'][0]['salary']['from'], vacant['items'][0]['alternate_url'])

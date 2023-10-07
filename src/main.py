@@ -1,7 +1,7 @@
 from src.bd_for_sql import DBManager
 import psycopg2
 
-from src.pars_hh import vacancy_on_sql
+from src.pars_hh import vacancy_on_sql, favorite_employer
 
 connect_database = psycopg2.connect(database="seach_vacancies", user="postgres", password="159763")
 cur = connect_database.cursor()
@@ -41,12 +41,21 @@ while show_vacancy not in (1, 2, 3, 4, 5):
     if show_vacancy not in [1, 2, 3, 4, 5]:
         print('Ошибочка вышла, выбери пункт снова')
         continue
-
     if show_vacancy == 5:
         key_word = input("Что найти в названии вакансии?\n")
         print(vacant.get_vacancies_with_keyword(key_word))
+    if show_vacancy == 1:
+        favorite_employer([10356459, 10321757, 4938750, 2467312, 9901773,
+                           9295279, 5347571, 4112759, 833298, 1583540])
+    if show_vacancy in [2, 3, 4]:
+        print_vacancy(show_vacancy)
+    user_key = input('Выбрать другой пункт?\n1. ДА\n2. НЕТ\n')
+    if user_key == '1':
+        show_vacancy = 0
+    else:
         break
-    print_vacancy(show_vacancy)
 
+
+print("УСПЕХОВ")
 cur.close()
 connect_database.close()
