@@ -51,9 +51,9 @@ class DBManager:
                                               9295279, 5347571, 4112759, 833298, 1583540])
         elif user_response == 5:
             key_word = input("Что найти в названии вакансии?\n")
-            return print(self.get_vacancies_with_keyword(key_word))
+            return [print(row) for row in self.get_vacancies_with_keyword(key_word)]
         else:
             show_vacancies = {2: self.get_companies_and_vacancies_count(),
                               3: self.get_all_vacancies(),
                               4: self.get_vacancies_with_higher_salary()}
-            return print(show_vacancies[user_response])
+            return [print(row) for row in show_vacancies[user_response]]
